@@ -7,13 +7,71 @@ Bem vindo ao GoBank
 [3] - Extrato
 [4] - Sair
 
-Qual ação deseja realizar: """
+> """
+
+menu_cadastro = """
+Bem vindo ao GoBank
+
+[1] - Criar conta / Cadatro
+[2] - Login / Sign in
+
+> """
 
 LIMITE_VALOR_DIARIO = 500
 LIMITE_DE_SAQUES = 3
 numero_saque = 0
 extrato_total = []
+lista_de_usuarios = []
 saldo = 0
+criar_usuario = False
+numero_conta = '0000'
+cont_conta = 0
+
+def login():
+    print("\nLogin de usuario\n")
+
+    nome = input("Nome: ")
+    cpf = input("CPF: ")
+
+    for dicionario in lista_de_usuarios:
+        for _, valor in dicionario.items():
+            if dicionario["cpf"] == cpf:
+                print('Login com sucesso!')
+            else:
+                print('Usuário não existente!')
+                cadastro()
+
+def cadastro(cont:int):
+
+    dict_usuarios = {
+        "Conta": "",
+        "nome": "",
+        "data de nascimento": "",
+        "cpf": "",
+        "endereco": "",
+    }
+
+    cont += 1
+    numero_conta = str(f'000{cont}')
+    print(f"\nCadastro de usuario - conta {numero_conta}\n")
+
+    nome = input("Nome: ")
+    dict_usuarios['nome'] =  nome
+
+    nascimento = input("Data de nascimento: ")
+    dict_usuarios['data de nascimento'] = nascimento
+
+    CPF = input("CPF: ")
+    dict_usuarios['cpf'] = CPF
+
+    endereco = input("Endereco: ")
+    dict_usuarios['endereco'] = endereco
+
+
+
+    lista_de_usuarios.append(dict_usuarios)
+
+    print("\nUsuário cadastrado com sucesso!")
 
 def saque(diario: int,saldo: float, limite_diario: int):
 
@@ -25,7 +83,9 @@ def saque(diario: int,saldo: float, limite_diario: int):
     valor_saque = valor_saque.replace(',','.')
     valor_saque = float(valor_saque)
 
-    if valor_saque > diario:
+    if valor_saque <= 0:
+        print(f"\nO valor de {valor_saque:.2f} é inválido!")
+    elif valor_saque > diario:
         print(f'\nO valor de {valor_saque:.2f} excede o limite de {diario:.2f} reais.')
     elif valor_saque > saldo:
         print(f'\nO valor de {valor_saque:.2f} excede o saldo de {saldo:.2f} reais.')
@@ -61,27 +121,36 @@ def extrato(extrato_total: list):
         if 'Foi sacado' in mensagem:
             todos_saques.append(mensagem)
 
-    print('\nExtrato:')
+    print('\nExtrato:\n')
 
     if todos_deposito:
-        print('\nDeposito:')
         for mensagem_deposito in todos_deposito:
             print(mensagem_deposito)
 
     if todos_saques:
-        print('\nSaque:')
         for mensagem_saque in todos_saques:
             print(mensagem_saque)
 
-while True:
-    escolha = input(menu) # Menu de escolha para o cliente
+    print(f'\nSaldo: {saldo}')
 
-    if not escolha.isdigit(): # Verificar se o número é um int
+while True:
+
+    if not criar_usuario:
+        escolha_cadastro = input(menu_cadastro)
+        if escolha_cadastro == '1':
+            cadastro(cont=cont_conta)
+            criar_usuario = True
+        if escolha_cadastro == '2':
+            login()
+            criar_usuario = True
+
+    escolha = input(menu)
+
+    if not escolha.isdigit():
         print("\nOpção inválida, tente novamente!")
         continue
 
-    escolha = int(escolha) # Tranformar escolha em um int
-
+    escolha = int(escolha)
     lista = [1, 2, 3, 4]
     if not escolha in lista:
         print("\nOpção inválida, tente novamente!")
@@ -96,7 +165,7 @@ while True:
         continue
 
     if escolha == 2:
-        valor_desposito = deposito(saldo=saldo,extrato_total=extrato_total)
+        valor_desposito = deposito(saldo,extrato_total)
         if not valor_desposito:
             continue
         saldo += valor_desposito
